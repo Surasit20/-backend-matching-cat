@@ -36,6 +36,8 @@ exports.login = async (req, res, next) => {
       } else {
         res.status(401).send({ message: 'Invlid email or password' });
       }
+    } else {
+      res.status(401).send({ message: 'Invlid email or password' });
     }
   } catch (err) {
     res.status(401).send({ message: err });
