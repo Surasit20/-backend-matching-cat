@@ -5,7 +5,7 @@ const dbConfig = require('./src/config/db.config.js');
 const auth = require('./src/middlewares/auth.js');
 const errors = require('./src/middlewares/error.js');
 const app = express();
-
+const PORT = process.env.PORT || 3030;
 const cors = require('cors');
 mongoose.Promise = global.Promise;
 mongoose
@@ -30,7 +30,7 @@ app.use('/cats', require('./src/routes/cats.routers.js'));
 app.use('/chat', require('./src/routes/chat.routers.js'));
 //app.use(error.errorHandler);
 
-app.listen(5000, () => {
+app.listen(PORT, () => {
   console.log('start server');
   //chatService.chat();
 });
