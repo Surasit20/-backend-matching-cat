@@ -5,7 +5,7 @@ const catService = require('../services/cats.services.js');
 
 //Add Cat
 //router.post('/add/cat', catController.register);
-router.get('/test', catController.test);
+router.post('/cancelmatch', catController.cancelMatch);
 router.post('/edit', catController.editCat);
 router.post('/match', catController.match);
 router.post(

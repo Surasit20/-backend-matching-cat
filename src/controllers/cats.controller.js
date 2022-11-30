@@ -1,6 +1,7 @@
 const Cat = require('../models/cat.model.js');
 const fs = require('fs');
 
+//เพิ่มแมว
 exports.addCat = async (req, res, next) => {
   const newCat = new Cat({
     name: req.body.name,
@@ -29,6 +30,8 @@ exports.addCat = async (req, res, next) => {
     natureOfParenting: cat.natureOfParenting,
   });
 };
+
+//แก้ไขแมว
 exports.editCat = async (req, res, next) => {
   const _id = req.body.id;
   const name = req.body.name;
@@ -60,7 +63,7 @@ exports.editCat = async (req, res, next) => {
   */
   });
 };
-
+//ลบแมว
 exports.deleteCat = async (req, res, next) => {
   try {
     const deleteCat = await Cat.findByIdAndDelete(req.params.id);
@@ -70,6 +73,7 @@ exports.deleteCat = async (req, res, next) => {
   }
 };
 
+// ส่งคำขอร้องผสมพันธุ์
 exports.match = async (req, res, next) => {
   const { catOwnerId, catTargetId } = req.body;
   //const isMatch = checkMatch(catOwnerId, catTargetId);
@@ -143,7 +147,7 @@ const checkMatch = async (catOwnerId, catTargetId) => {
 
   return false;
 };
-
+//ดึงข้อมูลแมว ทั้งหมด
 exports.getCats = async (req, res, next) => {
   //return cat is don't match
   const idOwner = req.params.id;
@@ -153,7 +157,7 @@ exports.getCats = async (req, res, next) => {
   const cats = await Cat.find(query);
   res.send(cats);
 };
-
+//ดึงข้อมูลแมว 1 ตัว
 exports.getCat = async (req, res, next) => {
   //return cat of owner
   const idCat = req.params.id;
@@ -161,7 +165,7 @@ exports.getCat = async (req, res, next) => {
   const cats = await Cat.find(query);
   res.send(cats);
 };
-
+//ดึงข้อมูลเจ้าของแมว
 exports.getCatOwner = async (req, res, next) => {
   //return cat of owner
   const idCat = req.params.id;
@@ -170,31 +174,63 @@ exports.getCatOwner = async (req, res, next) => {
   res.send(cats);
 };
 
+//อัพโหลดรูปภาพ
 exports.uploadImageCat = (req, res, next) => {
   if (req.file === 'undefined' || req.file === null) {
     return res.status(422).send('image is empty');
   }
   let file = req.file;
-
-  return res.status(201).send({ name: file.filename });
+  console.log(file);
+  return next.status(201).send({ name: file.filename });
 };
 
-exports.test = (req, res, next) => {
-  var contentType = 'image/png';
-  // Parsing the URL
-  var request = url.parse(req.url, true);
+exports.cancelMatch = async (req, res, next) => {
+  const { catOwnerId, catTargetId } = req.body;
+  //const isMatch = checkMatch(catOwnerId, catTargetId);
 
-  // Extracting the path of file
-  var action = request.pathname;
+  //fine id cat target
+  Cat.findById(catTargetId)
+    .then((doc) => {
+      //ก่อนเพิ่มแมวที่มาขอ
+      console.log(doc.pending);
+      console.log(catOwnerId);
+      //ตรวจสอบสัตว์เลี้ยงเคยส่งคำขอร้องหรือยัง
+      let isExist = true;
 
-  // Path Refinements
-  var filePath = path.join(__dirname, action).split('%20').join(' ');
-  res.writeHead(200, {
-    'Content-Type': contentType,
-  });
-  fs.readFile(filePath, function (err, content) {
-    // Serving the image
-    console.log(content);
-    res.end(content);
-  });
+      if (doc.pending.indexOf(catOwnerId) == -1) {
+        res.status(401).send('your cat do not exist');
+        isExist = false;
+      }
+      if (isExist == false) return;
+
+      //ลบคำขอแมว
+      doc.pending = doc.pending.filter((item) => {
+        return item !== catOwnerId;
+      });
+
+      //update new match
+      Cat.findByIdAndUpdate(
+        catTargetId,
+        { pending: doc.pending },
+        (err, docs) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log('Updated Match');
+            //ลบประวัติคำขอแมวให้คนขอร้อง
+            Cat.findByIdAndUpdate(catOwnerId, { request: '' }, (err, doc) => {
+              if (err) {
+                console.log(err);
+              } else {
+                // console.log(doc);
+              }
+            });
+            res.status(200).send('request successful');
+          }
+        }
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };

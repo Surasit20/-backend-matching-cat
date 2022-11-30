@@ -21,9 +21,7 @@ mongoose
   });
 app.use(express.json());
 app.use(cors());
-app.use('/images', (req, res) => {
-  res.send('test');
-});
+
 app.use('/images', express.static('./src/uploads/images'));
 app.use('/users', require('./src/routes/users.routers.js'));
 app.use('/cats', require('./src/routes/cats.routers.js'));
