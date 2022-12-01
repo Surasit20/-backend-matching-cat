@@ -5,14 +5,15 @@ const catService = require('../services/cats.services.js');
 
 //Add Cat
 //router.post('/add/cat', catController.register);
+router.post(
+  '/add',
+  catService.uploadImage.single('image1'),
+  catController.uploadImageCat
+);
 router.post('/cancelmatch', catController.cancelMatch);
 router.post('/edit', catController.editCat);
 router.post('/match', catController.match);
-router.post(
-  '/add',
-  catService.uploadImage.single('image'),
-  catController.addCat
-);
+
 router.get('/', catController.getCats);
 router.get('/:id', catController.getCat);
 router.get('/owner/:id', catController.getCatOwner);
