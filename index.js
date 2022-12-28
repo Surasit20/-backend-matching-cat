@@ -26,6 +26,7 @@ app.use('/images', express.static('./src/uploads/images'));
 app.use('/users', require('./src/routes/users.routers.js'));
 app.use('/cats', require('./src/routes/cats.routers.js'));
 app.use('/chat', require('./src/routes/chat.routers.js'));
+app.use('/managercat', require('./src/routes/manager.cat.routers.js'));
 //app.use(error.errorHandler);
 
 app.listen(PORT, () => {
