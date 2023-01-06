@@ -7,7 +7,7 @@ const catSchema = new mongoose.Schema(
     color: { type: String, required: true },
     sex: { type: String, required: true },
     vaccine: { type: Array, required: false },
-    matching: { type: String, required: false },
+    isMatching: { type: Boolean, required: false },
     congenitalDisease: { type: String, required: true },
     natureOfParenting: { type: String, required: true },
     pending: { type: Array, required: false },
