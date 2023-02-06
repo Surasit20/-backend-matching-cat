@@ -7,6 +7,10 @@ router.get('/getcolors', managerCatController.getColors);
 */
 //report
 router.get('/report/cat', managerCatController.getCatReport);
-router.get('/report/user', managerCatController.getUserReport);
-
+router.get('/report/users', managerCatController.getUserReport);
+router.delete('/delete/users', managerCatController.deleteUser);
+router.post('/notify', managerCatController.getNotifications);
+router.post('/sendSurvey', managerCatController.sendSurvey);
+router.delete('/deletenotify', managerCatController.deleteNotifications);
+router.get('/survey', managerCatController.getSurvey);
 module.exports = router;

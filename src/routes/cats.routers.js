@@ -10,6 +10,7 @@ router.post(
   catService.uploadImage.single('image1'),
   catController.uploadImageCat
 );
+router.post('/upload', catController.uploadImageCat1);
 router.post('/add', catController.addCat);
 router.post('/cancel/pending', catController.cancelPending);
 router.post('/cancel/request', catController.cancelRequest);

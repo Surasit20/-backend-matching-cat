@@ -1,67 +1,86 @@
 const Cat = require('../models/cat.model.js');
 const fs = require('fs');
-
+const User = require('../models/user.model.js');
+const formidable = require('formidable');
+const cloudinary = require('cloudinary');
 //เพิ่มแมว
 exports.addCat = async (req, res, next) => {
-  const location = JSON.parse(req.body.location);
-  const newCat = new Cat({
-    name: req.body.name,
-    owner: req.body.owner,
-    breed: req.body.breed,
-    color: req.body.color,
-    sex: req.body.sex,
-    birthday: new Date(req.body.birthday),
-    vaccine: req.body.vaccine,
-    congenitalDisease: req.body.congenitalDisease,
-    natureOfParenting: req.body.natureOfParenting,
-    photo: req.body.photo,
-    address: req.body.address,
-    location: { lat: location['lat'], lng: location['lng'] },
-  });
+  console.log(req.body);
 
-  const cat = await newCat.save();
+  try {
+    const location = JSON.parse(req.body.location);
+    const newCat = new Cat({
+      name: req.body.name,
+      owner: req.body.owner,
+      breed: req.body.breed,
+      color: req.body.color,
+      sex: req.body.sex,
+      birthday: new Date(req.body.birthday),
+      vaccine: req.body.vaccine,
+      congenitalDisease: req.body.congenitalDisease,
+      natureOfParenting: req.body.natureOfParenting,
+      photo: req.body.photo,
+      address: req.body.address,
+      location: { lat: location['lat'], lng: location['lng'] },
+    });
 
-  res.send({
-    _id: cat._id,
-    name: cat.name,
-    owner: cat.owner,
-    breed: cat.breed,
-    color: cat.color,
-    sex: cat.sex,
-    birthday: cat.birthday,
-    vaccine: cat.vaccine,
-    congenitalDisease: cat.congenitalDisease,
-    natureOfParenting: cat.natureOfParenting,
-    photo: cat.photo,
-  });
+    const cat = await newCat.save();
+
+    res.send({
+      error: '',
+      _id: cat._id,
+      name: cat.name,
+      owner: cat.owner,
+      breed: cat.breed,
+      color: cat.color,
+      sex: cat.sex,
+      birthday: cat.birthday,
+      vaccine: cat.vaccine,
+      congenitalDisease: cat.congenitalDisease,
+      natureOfParenting: cat.natureOfParenting,
+      photo: cat.photo,
+    });
+  } catch (err) {
+    console.log(err);
+    res.send({ error: err });
+  }
 };
 
 //แก้ไขแมว
 exports.editCat = async (req, res, next) => {
-  const cat = await Cat.findByIdAndUpdate(req.body._id, {
-    name: req.body.name,
-    owner: req.body.owner,
-    age: req.body.age,
-    breed: req.body.breed,
-    color: req.body.color,
-    sex: req.body.sex,
-    vaccine: req.body.vaccine,
-    congenitalDisease: req.body.congenitalDisease,
-    natureOfParenting: req.body.natureOfParenting,
-  });
+  try {
+    const location = JSON.parse(req.body.location);
+    const cat = await Cat.findByIdAndUpdate(req.body._id, {
+      name: req.body.name,
+      owner: req.body.owner,
+      age: req.body.age,
+      breed: req.body.breed,
+      color: req.body.color,
+      sex: req.body.sex,
+      vaccine: req.body.vaccine,
+      congenitalDisease: req.body.congenitalDisease,
+      natureOfParenting: req.body.natureOfParenting,
+      photo: req.body.photo,
+      location: { lat: location['lat'], lng: location['lng'] },
+      birthday: new Date(req.body.birthday),
+    });
 
-  res.send({
-    _id: cat._id,
-    name: cat.name,
-    owner: cat.owner,
-    breed: cat.breed,
-    color: cat.color,
-    sex: cat.sex,
-    age: cat.age,
-    vaccine: cat.vaccine,
-    congenitalDisease: cat.congenitalDisease,
-    natureOfParenting: cat.natureOfParenting,
-  });
+    res.send({
+      _id: cat._id,
+      name: cat.name,
+      owner: cat.owner,
+      breed: cat.breed,
+      color: cat.color,
+      sex: cat.sex,
+      age: cat.age,
+      vaccine: cat.vaccine,
+      congenitalDisease: cat.congenitalDisease,
+      natureOfParenting: cat.natureOfParenting,
+      photo: req.body.photo,
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 //ลบแมว
@@ -70,33 +89,44 @@ exports.deleteCat = async (req, res, next) => {
   const idOwner = req.body.idOwner;
   const idCat = req.body.idCat;
   try {
+    let Cats = await Cat.find();
+
+    for (let i = 0; i < Cats.length; i++) {
+      if (Cats[i]['accept'] == idCat) {
+        await Cat.findByIdAndUpdate(Cats[i]['_id'], { accept: '' });
+      }
+      if (Cats[i]['request'] == idCat) {
+        await Cat.findByIdAndUpdate(Cats[i]['_id'], { request: '' });
+      }
+
+      for (let j = 0; j < Cats[i]['pending'].length; j++) {
+        if (Cats[i]['pending'][j] == idCat) {
+          let newPending = Cats[i]['pending'].filter((val) => val != idCat);
+
+          await Cat.findByIdAndUpdate(Cats[i]['_id'], {
+            pending: newPending,
+          });
+        }
+      }
+    }
+
     const deleteCat = await Cat.findByIdAndDelete(idCat);
-    res.status(200).json(deleteCat);
+    //console.log(deleteCat);
+    res.status(200).json();
   } catch (error) {
+    console.log(error);
     res.status(404).json(error);
   }
 };
 
-exports.deleteCat = async (req, res, next) => {
-  console.log(req.body.idCat);
-  const idOwner = req.body.idOwner;
-  const idCat = req.body.idCat;
-  try {
-    const deleteCat = await Cat.findByIdAndDelete(idCat);
-    res.status(200).json(deleteCat);
-  } catch (error) {
-    res.status(404).json(error);
-  }
-};
-
-// ส่งคำขอร้องผสมพันธุ์
+//ส่งคำขอร้องผสมพันธุ์
 exports.request = async (req, res, next) => {
   const { catOwnerId, catTargetId } = req.body;
   //const isMatch = checkMatch(catOwnerId, catTargetId);
 
   //fine id cat target
   Cat.findById(catTargetId)
-    .then((doc) => {
+    .then(async (doc) => {
       //ก่อนเพิ่มแมวที่มาขอ
       console.log(doc.pending);
       //ตรวจสอบสัตว์เลี้ยงเคยส่งคำขอร้องหรือยัง
@@ -110,16 +140,49 @@ exports.request = async (req, res, next) => {
       });
       if (isDuplicate == false) return;
 
-      //ตรวจสอยบว่าแมวตัวนี้matchกับแมวตัวอื่นยัง
+      //ตรวจสอบว่าแมวตัวนี้matchกับแมวตัวอื่นยัง
       if (doc.accept != '' && doc.accept != null) {
         res.send({ error: 'the cat is matched' });
         return;
       }
-      console.log('สำเร็จ');
+
+      //เวลาปัจุบัน
+      let date_ob = new Date();
+      let currentDate = new Date().toJSON().slice(0, 10);
+      console.log(currentDate); // "2022-06-17"
+      let year = date_ob.getFullYear();
+
+      // current hours
+      let hours = date_ob.getHours();
+
+      // current minutes
+      let minutes = date_ob.getMinutes();
+
+      //แจ้งเตือน
+      let notification = {
+        subject: 'มีแมวส่งคำร้องผสมพันธ์กับ' + doc.name,
+        content:
+          'เวลาที่ส่งคำร้องขอ ' +
+          currentDate +
+          ' ' +
+          hours +
+          ':' +
+          minutes +
+          ' น.',
+        read: false,
+      };
+      console.log(doc.owner);
+      await User.findById(doc.owner).then(async (user) => {
+        let tempnNotification = user.notification;
+        await User.findByIdAndUpdate(doc.owner, {
+          notification: [notification, ...tempnNotification],
+        });
+      });
       const newMatch = [...doc.pending, catOwnerId];
       //หลังแมวที่มาขอ
       console.log(newMatch);
       //update new match
+
       Cat.findByIdAndUpdate(catTargetId, { pending: newMatch }, (err, docs) => {
         if (err) {
           console.log(err);
@@ -154,10 +217,9 @@ exports.accept = async (req, res, next) => {
 
   //fine id cat target
   Cat.findById(catOwnerId)
-    .then((doc) => {
-      //ก่อนเพิ่มแมวที่มาขอ
+    .then(async (doc) => {
       console.log(doc.pending);
-      //ตรวจสอบสัตว์เลี้ยงเคยส่งคำขอร้องของเรา
+
       let isDuplicate = true;
 
       doc.pending.forEach((catId) => {
@@ -179,6 +241,24 @@ exports.accept = async (req, res, next) => {
       //หลังแมวที่มาขอ
       console.log(newMatch);
       //update new match
+
+      //เวลาปัจุบัน
+      let currentDate = new Date().toJSON().slice(0, 10);
+      console.log(currentDate); // "2022-06-17"
+
+      //แจ้งเตือน
+      let notification = {
+        subject: doc.name + 'ได้จับคู่แล้ว',
+        content: 'เวลาที่ส่งคำร้องขอ' + currentDate,
+        read: false,
+      };
+      console.log(doc.owner);
+      await User.findById(doc.owner).then(async (user) => {
+        let tempnNotification = user.notification;
+        await User.findByIdAndUpdate(doc.owner, {
+          notification: [notification, ...tempnNotification],
+        });
+      });
       Cat.findByIdAndUpdate(
         catOwnerId,
         { pending: newMatch, isMatching: true, accept: catTargetId },
@@ -187,14 +267,27 @@ exports.accept = async (req, res, next) => {
             console.log(err);
           } else {
             console.log('Updated Match');
-            //เพิ่มประวัติคำขอแมวให้คนขอร้อง
+
             Cat.findByIdAndUpdate(
               catTargetId,
               { accept: catOwnerId, isMatching: true, pending: [] },
-              (err, doc) => {
+              async (err, doc) => {
                 if (err) {
                   console.log(err);
                 } else {
+                  //แจ้งเตือน
+                  let notification = {
+                    subject: doc.name + 'ได้จับคู่แล้ว',
+                    content: 'เวลาที่ส่งคำร้องขอ' + currentDate,
+                    read: false,
+                  };
+                  console.log(doc.owner);
+                  await User.findById(doc.owner).then(async (user) => {
+                    let tempnNotification = user.notification;
+                    await User.findByIdAndUpdate(doc.owner, {
+                      notification: [notification, ...tempnNotification],
+                    });
+                  });
                   console.log(doc);
                 }
               }
@@ -210,25 +303,6 @@ exports.accept = async (req, res, next) => {
     });
 };
 
-const checkMatch = async (catOwnerId, catTargetId) => {
-  let catTargetMatchArr;
-  await Cat.findById(catTargetId)
-    .then((doc) => {
-      catTargetMatchArr = doc.matching;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
-  //check
-  for (let i = 0; i < catTargetMatchArr.length; i++) {
-    if (catTargetMatchArr[i] === catOwnerId) {
-      return true;
-    }
-  }
-
-  return false;
-};
 //ดึงข้อมูลแมว ทั้งหมด
 exports.getCats = async (req, res, next) => {
   //return cat is don't match
@@ -281,11 +355,15 @@ exports.getCatOwner = async (req, res, next) => {
 
     let cats = await Cat.find(query);
     let cats1 = await Cat.find();
-    console.log(typeof cats);
+    //console.log(typeof cats);
     let catData = [];
 
     for (let i = 0; i < cats.length; i++) {
       // get data cat
+      let Difference_In_Time = Date.now() - cats[i].birthday.getTime();
+      let age = parseInt(Difference_In_Time / (1000 * 3600 * 24));
+      console.log(age);
+      cats[i] = { ...cats[i]._doc, age: age };
 
       if (cats[i].request != '' && cats[i].request != null) {
         const query = { _id: cats[i].request };
@@ -322,24 +400,12 @@ exports.getCatOwner = async (req, res, next) => {
         //console.log(cats[i]);
       }
     }
-    console.log(typeof cats);
+
+    //console.log(cats);
     res.send(cats);
   } catch (err) {
     console.log(err.message);
   }
-};
-
-//อัพโหลดรูปภาพ
-exports.uploadImageCat = (req, res, next) => {
-  if (req.file === 'undefined' || req.file === null) {
-    return res.status(422).send('image is empty');
-  }
-  let file = req.file;
-  //console.log(file);
-  //console.log(req.body);
-  return res
-    .status(201)
-    .send({ name: `http://10.10.10.150:3030/images/${file.filename}` });
 };
 
 exports.cancelRequest = async (req, res, next) => {
@@ -494,11 +560,45 @@ exports.cancelAccept = async (req, res, next) => {
               Cat.findByIdAndUpdate(
                 catTargetId,
                 { request: '', accept: '' },
-                (err, doc) => {
+                async (err, doc) => {
                   if (err) {
                     console.log(err);
                   } else {
                     // console.log(doc);
+                    //เวลาปัจุบัน
+                    let date_ob = new Date();
+                    let currentDate = new Date().toJSON().slice(0, 10);
+                    console.log(currentDate); // "2022-06-17"
+                    let year = date_ob.getFullYear();
+
+                    // current hours
+                    let hours = date_ob.getHours();
+
+                    // current minutes
+                    let minutes = date_ob.getMinutes();
+
+                    // prints date in YYYY-MM-DD format
+
+                    //แจ้งเตือน
+                    let notification = {
+                      subject: doc.name + 'ได้ถูกยกเลิกจับคู่',
+                      content:
+                        'เวลาที่ยกเลิกจับคู่ ' +
+                        currentDate +
+                        ' ' +
+                        hours +
+                        ':' +
+                        minutes +
+                        ' น.',
+                      read: false,
+                    };
+                    console.log(doc.owner);
+                    await User.findById(doc.owner).then(async (user) => {
+                      let tempnNotification = user.notification;
+                      await User.findByIdAndUpdate(doc.owner, {
+                        notification: [notification, ...tempnNotification],
+                      });
+                    });
                   }
                 }
               );
@@ -514,4 +614,53 @@ exports.cancelAccept = async (req, res, next) => {
   } catch (err) {
     res.send({ message: err.message });
   }
+};
+
+//อัพโหลดรูปภาพ
+exports.uploadImageCat = (req, res, next) => {
+  if (req.file === 'undefined' || req.file === null) {
+    return res.status(422).send('image is empty');
+  }
+  let file = req.file;
+  //console.log(file);
+  //console.log(req.body);
+  return res
+    .status(201)
+    .send({ name: `http://10.10.10.150:3030/images/${file.filename}` });
+};
+/*
+const cloudinary = require('cloudinary').v2;
+const Formidable = require('formidable');
+const util = require('util');
+*/
+exports.uploadImageCat1 = (req, res, next) => {
+  try {
+    console.log(req.body);
+
+    const util = require('util');
+
+    const form = formidable({ multiples: true });
+    // Configuration
+    cloudinary.config({
+      cloud_name: 'dx59hbzcc',
+      api_key: '855424797956667',
+      api_secret: 'DMZow5_WOC1z44VCDW0ZkPtHTAs',
+    });
+
+    // Upload
+    form.parse(req, (err, fields, files) => {
+      console.log(req.body);
+      console.log(files.files.filepath);
+      //https://cloudinary.com/documentation/upload_images
+      cloudinary.uploader.upload(files.files.filepath, (result) => {
+        console.log(result);
+        if (result.public_id) {
+          res.writeHead(200, { 'content-type': 'text/plain' });
+
+          res.end(util.inspect(result.url));
+        }
+      });
+    });
+    return;
+  } catch (err) {}
 };

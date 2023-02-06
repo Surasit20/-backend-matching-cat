@@ -9,4 +9,10 @@ router.post('/register', userController.register);
 //Login
 router.post('/login', userController.login);
 
+router.post('/reset', userController.createTokenResetPassword);
+
+router.post('/edit', userController.editUser);
+
+router.post('/changePassword', userController.changePasswordUser);
+
 module.exports = router;

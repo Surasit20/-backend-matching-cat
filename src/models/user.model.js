@@ -12,6 +12,16 @@ const userSchema = new mongoose.Schema(
     address: { type: String, required: false },
     profileImg: { type: String, required: false },
     tel: { type: String, required: false },
+    tokenResetPassword: { type: String, required: false },
+    notification: { type: Array, required: false },
+    survey: {
+      type: {
+        ratting: { type: Number },
+        suggestion: { type: String },
+        name: { type: String },
+      },
+      required: false,
+    },
   },
   {
     timestamps: true,

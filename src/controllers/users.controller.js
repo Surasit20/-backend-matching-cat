@@ -1,6 +1,8 @@
 const User = require('../models/user.model.js');
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const config = process.env;
 exports.register = async (req, res, next) => {
   if (
     req.body.userName == '' ||
@@ -10,6 +12,11 @@ exports.register = async (req, res, next) => {
     req.body.name == ''
   ) {
     res.send({ message: 'กรุณากรอกข้อมูลให้ครบ' });
+    return;
+  }
+
+  if (req.body.tel.length != 10 && req.body.tel[0] != '0') {
+    res.send({ message: 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง' });
     return;
   }
   try {
@@ -62,22 +69,20 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
+    console.log(user);
+    console.log(req.body);
     if (user) {
+      console.log(user);
       if (bcrypt.compareSync(req.body.password, user.password)) {
-        res.send({
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        });
+        res.send(user);
       } else {
-        res.status(401).send({ message: 'Invlid email or password' });
+        res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
       }
     } else {
-      res.status(401).send({ message: 'Invlid email or password' });
+      res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
   } catch (err) {
-    res.status(401).send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
   }
 };
 
@@ -88,4 +93,106 @@ exports.getUser = async (req, res, next) => {
   const user = await User.find(query);
 
   res.send(user);
+};
+
+//แก้ไขข้อมูลผู้ใช้
+exports.editUser = async (req, res, next) => {
+  console.log(req.body.profileImg);
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.body._id,
+      {
+        email: req.body.email,
+        userName: req.body.userName,
+        name: req.body.name,
+        tel: req.body.tel,
+        profileImg: req.body.profileImg,
+      },
+      { returnOriginal: false }
+    );
+    res.send(user);
+  } catch (err) {}
+};
+
+//เปลี่ยนรหัสผ่าน
+exports.changePasswordUser = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ _id: req.body.id });
+    console.log(user);
+    console.log(req.body);
+    if (user) {
+      if (bcrypt.compareSync(req.body.password, user.password)) {
+        const newPassword = bcrypt.hashSync(req.body.newPassword);
+        await User.findByIdAndUpdate(req.body.id, { password: newPassword });
+        res.send({
+          message: 'เปลี่ยนรหัสผ่านสำเร็จ',
+        });
+      } else {
+        res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      }
+    } else {
+      res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    }
+  } catch (err) {
+    res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+  }
+};
+exports.createTokenResetPassword = async (req, res) => {
+  // Our login logic starts here
+  try {
+    // Get user input
+    const { email } = req.body;
+
+    // Validate user input
+    if (!email) {
+      res.status(400).send('All input is required');
+    }
+
+    // Validate if user exist in our database
+    const user = await User.findOne({ email });
+
+    if (user) {
+      // Create token
+      const token = jwt.sign({ user_id: user._id, email }, 'dfhfghrth', {
+        expiresIn: '5m',
+      });
+
+      console.log(user);
+      const userAddtoken = await User.findByIdAndUpdate(user._id, {
+        tokenResetPassword: token,
+      });
+      // save user token
+
+      // user
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'mythgamer2557@gmail.com',
+          pass: 'nwezlwfgihoxxvzu',
+        },
+      });
+
+      var mailOptions = {
+        from: 'mythgamer2557@gmail.com',
+        to: 'myfriend@yahoo.com',
+        subject: 'Sending Email using Node.js',
+        text: 'That was easy!',
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+      res.status(200).json(user);
+    } else {
+      res.status(400).send('Invalid Credentials');
+    }
+  } catch (err) {
+    console.log('111111111111');
+    console.log(err);
+  }
+  // Our register logic ends here
 };

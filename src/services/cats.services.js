@@ -3,6 +3,7 @@ const Cat = require('../models/cat.model.js');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log(file.originalname);
+    console.log('ดเกดเ');
     cb(null, __dirname + '/../uploads/images');
   },
   filename: (req, file, cb) => {
@@ -18,7 +19,7 @@ exports.stableMatching = async (req, res, next) => {
     const idCat = req.body.idCat;
     const queryOwner = { _id: idCat };
     const ownerCat = await Cat.find(queryOwner);
-    const queryAllCats = { owner: { $ne: ownerCat[0].owner } };
+    const queryAllCats = { owner: { $ne: ownerCat[0].owner }, accept: '' };
     const cats = await Cat.find(queryAllCats);
 
     // find OppositeSex of owner cat
@@ -73,7 +74,7 @@ exports.stableMatching = async (req, res, next) => {
         ratingLow.push(catOppositeSex[i]);
       }
     }
-
+    console.log(rating1);
     const result = [
       ...rating1,
       ...rating2,

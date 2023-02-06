@@ -24,6 +24,20 @@ exports.getCatReport = async (req, res, next) => {
     totalPendingCat: 0,
     totalUnmatchCat: 0,
   };
+  let breed = {
+    สายพันธุ์เอเซียนกึ่งขนยาว: 0,
+    สายพันธุ์บาลิเนส: 0,
+    สายพันธุ์เบอร์แมน: 0,
+    สายพันธุ์อะบิสซิเนียน: 0,
+    สายพันธุ์บริติชขนสั้น: 0,
+    สายพันธุ์บชาร์ตรู: 0,
+    สายพันธุ์สฟิงซ์: 0,
+    สายพันธุ์มันซ์กิ้น: 0,
+    สายพันธุ์คอร์นิซเรกซ์: 0,
+    สายพันธุ์เบงกอล: 0,
+    สายพันธุ์ชีโต: 0,
+    สายพันธุ์แมวพันธุ์ทอยเกอร์: 0,
+  };
 
   const Cats = await Cat.find();
 
@@ -44,16 +58,119 @@ exports.getCatReport = async (req, res, next) => {
       report.totalUnMatchedCat += 1;
     }
 
-    //count /
+    //count
     if (element.RequestCat != '') {
       report.totalRequestCat += 1;
     }
+    breed[element.breed] += 1;
   });
+
+  report.breed = breed;
+
   res.send(report);
 };
 
 exports.getUserReport = async (req, res, next) => {
   const Users = await User.find();
+  res.send(Users);
+};
 
-  res.send({ length: Users.length, users: Users });
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const Users = await User.findByIdAndDelete(req.body.id);
+    await Cat.findByIdAndDelete(req.body.id, { owner: req.body.id });
+    console.log(Users);
+    res.send(Users);
+  } catch (err) {
+    res.send({ message: err.message });
+  }
+};
+//แจ้งเตือน
+exports.getNotifications = async (req, res, next) => {
+  const query = { _id: req.body.id };
+  const user = await User.find(query);
+  res.send(user[0].notification);
+};
+
+exports.deleteNotifications = async (req, res, next) => {
+  try {
+    const query = { _id: req.body.id };
+    const user = await User.find(query);
+
+    let notification = user[0].notification;
+    const result = notification.filter((val, i) => i != req.body.index);
+    //console.log(result);
+    const resUser = await User.findByIdAndUpdate(
+      req.body.id,
+      {
+        notification: result,
+      },
+      { returnOriginal: false }
+    );
+
+    res.send(resUser.notification);
+  } catch (err) {
+    res.send({ message: err.message });
+  }
+};
+
+exports.sendSurvey = async (req, res, next) => {
+  try {
+    // const query = { _id: req.body.id };
+    //const user = await User.find(query);
+
+    await User.findByIdAndUpdate(req.body.id, {
+      survey: {
+        ratting: req.body.ratting,
+        suggestion: req.body.suggestion,
+        name: req.body.name,
+      },
+    });
+    res.send({ message: 'success' });
+  } catch (err) {
+    res.send({ message: err.message });
+  }
+};
+
+exports.getSurvey = async (req, res, next) => {
+  let ratting = {
+    '1.0': 0,
+    1.5: 0,
+    '2.0': 0,
+    2.5: 0,
+    '3.0': 0,
+    3.5: 0,
+    '4.0': 0,
+    4.5: 0,
+    '5.0': 0,
+  };
+
+  let rattingAvg = 0;
+  let rattingCount = 0;
+  let survey = [];
+  try {
+    const users = await User.find();
+
+    users.forEach((user) => {
+      if (user.survey) {
+        if (user.survey.suggestion != '') {
+          survey.push(user.survey);
+        }
+        rattingCount += 1;
+        console.log(user.survey);
+        ratting[user.survey.ratting.toFixed(1).toString()] =
+          ratting[user.survey.ratting.toFixed(1).toString()] + 1;
+        rattingAvg += user.survey.ratting;
+      }
+    });
+    console.log(rattingAvg);
+    console.log(rattingCount);
+    res.send({
+      ratting: ratting,
+      rattingAvg: rattingAvg / rattingCount,
+      survey: survey,
+    });
+  } catch (err) {
+    res.send({ message: err.message });
+  }
 };
