@@ -22,6 +22,7 @@ exports.addCat = async (req, res, next) => {
       photo: req.body.photo,
       address: req.body.address,
       location: { lat: location['lat'], lng: location['lng'] },
+      feedSystem: req.body.feedSystem,
     });
 
     const cat = await newCat.save();
@@ -39,6 +40,7 @@ exports.addCat = async (req, res, next) => {
       congenitalDisease: cat.congenitalDisease,
       natureOfParenting: cat.natureOfParenting,
       photo: cat.photo,
+      feedSystem: cat.feedSystem,
     });
   } catch (err) {
     console.log(err);
@@ -63,6 +65,7 @@ exports.editCat = async (req, res, next) => {
       photo: req.body.photo,
       location: { lat: location['lat'], lng: location['lng'] },
       birthday: new Date(req.body.birthday),
+      feedSystem: req.body.feedSystem,
     });
 
     res.send({
@@ -77,6 +80,7 @@ exports.editCat = async (req, res, next) => {
       congenitalDisease: cat.congenitalDisease,
       natureOfParenting: cat.natureOfParenting,
       photo: req.body.photo,
+      feedSystem: cat.feedSystem,
     });
   } catch (err) {
     console.log(err);
@@ -323,10 +327,19 @@ exports.setInterested = async (req, res, next) => {
   const idCat = req.body.idCat;
   const breed = req.body.breed;
   const color = req.body.color;
+  const feedSystem = req.body.feedSystem;
+  const vaccine = req.body.vaccine;
   console.log(req.body);
   Cat.findByIdAndUpdate(
     idCat,
-    { interested: { breed: breed, color: color } },
+    {
+      interested: {
+        breed: breed,
+        color: color,
+        feedSystem: feedSystem,
+        vaccine: vaccine,
+      },
+    },
     function (err, docs) {
       if (err) {
         console.log(err);
@@ -362,7 +375,7 @@ exports.getCatOwner = async (req, res, next) => {
       // get data cat
       let Difference_In_Time = Date.now() - cats[i].birthday.getTime();
       let age = parseInt(Difference_In_Time / (1000 * 3600 * 24));
-      console.log(age);
+      //console.log(age);
       cats[i] = { ...cats[i]._doc, age: age };
 
       if (cats[i].request != '' && cats[i].request != null) {

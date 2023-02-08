@@ -2,6 +2,7 @@ mongoose = require('mongoose');
 const catSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    feedSystem: { type: String, required: true },
     owner: { type: String, required: true },
     breed: { type: String, required: true },
     color: { type: String, required: true },
@@ -21,6 +22,8 @@ const catSchema = new mongoose.Schema(
     interested: {
       breed: String,
       color: String,
+      feedSystem: String,
+      vaccine: String,
     },
     required: false,
   },

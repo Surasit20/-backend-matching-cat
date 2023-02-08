@@ -2,8 +2,8 @@ const multer = require('multer');
 const Cat = require('../models/cat.model.js');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log(file.originalname);
-    console.log('ดเกดเ');
+    // console.log(file.originalname);
+    //console.log('ดเกดเ');
     cb(null, __dirname + '/../uploads/images');
   },
   filename: (req, file, cb) => {
@@ -27,11 +27,14 @@ exports.stableMatching = async (req, res, next) => {
       return cat.sex != ownerCat[0].sex;
     });
 
-    let rating1 = [];
-    let rating2 = [];
-    let ratingLow = [];
+    let rating100 = [];
+    let rating80 = [];
+    let rating60 = [];
+    let rating40 = [];
+    let rating20 = [];
+    let ratingRandom = [];
 
-    console.log(ownerCat[0].birthday.getTime());
+    //console.log(ownerCat[0].birthday.getTime());
     const interestedOwnerCat = ownerCat[0].interested;
     for (let i = 0; i < catOppositeSex.length; ++i) {
       //get age
@@ -43,7 +46,7 @@ exports.stableMatching = async (req, res, next) => {
         age: parseInt(Difference_In_Time / (1000 * 3600 * 24)),
       };
 
-      console.log(parseInt(Difference_In_Time / (1000 * 3600 * 24)));
+      //console.log(parseInt(Difference_In_Time / (1000 * 3600 * 24)));
       //count the number of interested
 
       let point = 0;
@@ -52,39 +55,85 @@ exports.stableMatching = async (req, res, next) => {
       if (
         interestedOwnerCat.breed == catOppositeSex[i].breed &&
         catOppositeSex[i].interested.breed == ownerCat[0].breed &&
-        interestedOwnerCat.color == catOppositeSex[i].color &&
-        catOppositeSex[i].interested.color == ownerCat[0].color
+        interestedOwnerCat.breed != undefined
       ) {
-        point++;
+        point += 40;
+        console.log('ยยย');
       }
+      console.log(catOppositeSex[i].color);
       if (
         interestedOwnerCat.color == catOppositeSex[i].color &&
-        catOppositeSex[i].interested.color == ownerCat[0].color
+        catOppositeSex[i].interested.color == ownerCat[0].color &&
+        interestedOwnerCat.color != undefined
       ) {
-        point++;
+        point += 20;
+        console.log('เเเ');
       }
-      //console.log(point + '---' + catOppositeSex[i].name);
 
+      //console.log(interestedOwnerCat.feedSystem);
+      if (
+        interestedOwnerCat.feedSystem == catOppositeSex[i].feedSystem &&
+        catOppositeSex[i].interested.feedSystem == ownerCat[0].feedSystem &&
+        interestedOwnerCat.feedSystem != undefined
+      ) {
+        point += 20;
+      }
+
+      try {
+        let isVaccineOwner =
+          interestedOwnerCat.vaccine.includes('ยังไม่ได้รับวัคซีน');
+        let isVaccineOpposite =
+          catOppositeSex[i].vaccine[0].includes('ยังไม่ได้รับวัคซีน');
+
+        let isVaccineOwnerInterested =
+          interestedOwnerCat.vaccine.includes('ยังไม่ได้รับวัคซีน');
+        let isVaccineOppositeInterested =
+          catOppositeSex[i].vaccine[0].includes('ยังไม่ได้รับวัคซีน');
+
+        if (
+          isVaccineOwner == isVaccineOpposite &&
+          isVaccineOwnerInterested == isVaccineOppositeInterested
+        ) {
+          console.log('ฟฟ');
+          point += 20;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+      //point = 100;
+      console.log(point + '---' + catOppositeSex[i].name);
+
+      catOppositeSex[i].probability = point;
       // ranking
-      if (point == 2) {
-        rating1.push(catOppositeSex[i]);
-      } else if (point == 1) {
-        rating2.push(catOppositeSex[i]);
+      if (point == 100) {
+        rating100.push(catOppositeSex[i]);
+      } else if (point == 80) {
+        rating80.push(catOppositeSex[i]);
+      } else if (point == 60) {
+        rating60.push(catOppositeSex[i]);
+      } else if (point == 40) {
+        rating40.push(catOppositeSex[i]);
+      } else if (point == 20) {
+        rating20.push(catOppositeSex[i]);
       } else {
-        ratingLow.push(catOppositeSex[i]);
+        ratingRandom.push(catOppositeSex[i]);
       }
     }
-    console.log(rating1);
+    //console.log(rating1);
     const result = [
-      ...rating1,
-      ...rating2,
-      ...ratingLow,
-      { message: 'คุณเลือกแมวแล้ว' },
+      ...rating100,
+      ...rating80,
+      ...rating60,
+      ...rating40,
+      ...rating20,
+      ...ratingRandom,
+      { message: 'คุณเลือกแมวแล้ว', probability: '' },
     ];
 
     //console.log(result);
     res.send(result);
   } catch (e) {
+    console.log(e);
     res.send({ message: 'คุณยังไม่ได้เลือกแมว' });
   }
 };
