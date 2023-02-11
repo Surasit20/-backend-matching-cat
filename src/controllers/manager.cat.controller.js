@@ -78,9 +78,37 @@ exports.getUserReport = async (req, res, next) => {
 exports.deleteUser = async (req, res, next) => {
   try {
     const Users = await User.findByIdAndDelete(req.body.id);
-    await Cat.findByIdAndDelete(req.body.id, { owner: req.body.id });
-    console.log(Users);
-    res.send(Users);
+    //await Cat.findByIdAndDelete(req.body.id, { owner: req.body.id });
+
+    let Cats = await Cat.find();
+    let CatsOwner = await Cat.find({ owner: req.body.id });
+    console.log(CatsOwner[0]._id.toString());
+
+    for (let j = 0; j < CatsOwner.length; j++) {
+      await Cat.findByIdAndDelete(CatsOwner[j]._id.toString());
+      for (let i = 0; i < Cats.length; i++) {
+        if (Cats[i]['accept'] == CatsOwner[j]._id.toString()) {
+          await Cat.findByIdAndUpdate(Cats[i], { accept: '' });
+        }
+        if (Cats[i]['request'] == CatsOwner[j]._id.toString()) {
+          await Cat.findByIdAndUpdate(Cats[i]), { request: '' };
+        }
+
+        for (let j = 0; j < Cats[i]['pending'].length; j++) {
+          if (Cats[i]['pending'][j] == CatsOwner[j]._id.toString()) {
+            let newPending = Cats[i]['pending'].filter(
+              (val) => val != CatsOwner[j]._id.toString()
+            );
+
+            await Cat.findByIdAndUpdate(Cats[i], {
+              pending: newPending,
+            });
+          }
+        }
+      }
+    }
+    //console.log(Users);
+    res.send({ Users });
   } catch (err) {
     res.send({ message: err.message });
   }
@@ -154,6 +182,7 @@ exports.getSurvey = async (req, res, next) => {
     users.forEach((user) => {
       if (user.survey) {
         if (user.survey.suggestion != '') {
+          user.survey.name = user.name;
           survey.push(user.survey);
         }
         rattingCount += 1;

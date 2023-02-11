@@ -60,7 +60,7 @@ exports.stableMatching = async (req, res, next) => {
         point += 40;
         console.log('ยยย');
       }
-      console.log(catOppositeSex[i].color);
+      //    console.log(catOppositeSex[i].color);
       if (
         interestedOwnerCat.color == catOppositeSex[i].color &&
         catOppositeSex[i].interested.color == ownerCat[0].color &&
@@ -98,10 +98,10 @@ exports.stableMatching = async (req, res, next) => {
           point += 20;
         }
       } catch (e) {
-        console.log(e);
+        //  console.log(e);
       }
       //point = 100;
-      console.log(point + '---' + catOppositeSex[i].name);
+      // console.log(point + '---' + catOppositeSex[i].name);
 
       catOppositeSex[i].probability = point;
       // ranking
@@ -119,21 +119,26 @@ exports.stableMatching = async (req, res, next) => {
         ratingRandom.push(catOppositeSex[i]);
       }
     }
-    //console.log(rating1);
-    const result = [
-      ...rating100,
+    let allRandom = [
       ...rating80,
       ...rating60,
       ...rating40,
       ...rating20,
       ...ratingRandom,
+    ];
+
+    const shuffledRating = allRandom.sort((a, b) => 0.5 - Math.random());
+
+    const result = [
+      ...rating100,
+      ...shuffledRating,
       { message: 'คุณเลือกแมวแล้ว', probability: '' },
     ];
 
     //console.log(result);
     res.send(result);
   } catch (e) {
-    console.log(e);
+    //console.log(e);
     res.send({ message: 'คุณยังไม่ได้เลือกแมว' });
   }
 };

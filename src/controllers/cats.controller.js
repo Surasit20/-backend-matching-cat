@@ -3,6 +3,7 @@ const fs = require('fs');
 const User = require('../models/user.model.js');
 const formidable = require('formidable');
 const cloudinary = require('cloudinary');
+const notificationController = require('../services/notification.services.js');
 //เพิ่มแมว
 exports.addCat = async (req, res, next) => {
   console.log(req.body);
@@ -43,7 +44,7 @@ exports.addCat = async (req, res, next) => {
       feedSystem: cat.feedSystem,
     });
   } catch (err) {
-    console.log(err);
+    //console.log(err);
     res.send({ error: err });
   }
 };
@@ -83,7 +84,7 @@ exports.editCat = async (req, res, next) => {
       feedSystem: cat.feedSystem,
     });
   } catch (err) {
-    console.log(err);
+    //console.log(err);
   }
 };
 
@@ -118,7 +119,7 @@ exports.deleteCat = async (req, res, next) => {
     //console.log(deleteCat);
     res.status(200).json();
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(404).json(error);
   }
 };
@@ -153,7 +154,7 @@ exports.request = async (req, res, next) => {
       //เวลาปัจุบัน
       let date_ob = new Date();
       let currentDate = new Date().toJSON().slice(0, 10);
-      console.log(currentDate); // "2022-06-17"
+      // console.log(currentDate); // "2022-06-17"
       let year = date_ob.getFullYear();
 
       // current hours
@@ -175,7 +176,14 @@ exports.request = async (req, res, next) => {
           ' น.',
         read: false,
       };
-      console.log(doc.owner);
+
+      let data = {
+        content: 'มีแมวส่งคำร้องผสมพันธ์กับ' + doc.name,
+        userId: [doc.owner],
+      };
+      notificationController.sendNotificationToDevice(data);
+
+      //console.log(doc.owner);
       await User.findById(doc.owner).then(async (user) => {
         let tempnNotification = user.notification;
         await User.findByIdAndUpdate(doc.owner, {
@@ -184,12 +192,12 @@ exports.request = async (req, res, next) => {
       });
       const newMatch = [...doc.pending, catOwnerId];
       //หลังแมวที่มาขอ
-      console.log(newMatch);
+      //  console.log(newMatch);
       //update new match
 
       Cat.findByIdAndUpdate(catTargetId, { pending: newMatch }, (err, docs) => {
         if (err) {
-          console.log(err);
+          //  console.log(err);
         } else {
           console.log('Updated Match');
           //เพิ่มประวัติคำขอแมวให้คนขอร้อง
@@ -198,9 +206,9 @@ exports.request = async (req, res, next) => {
             { request: catTargetId },
             (err, doc) => {
               if (err) {
-                console.log(err);
+                //console.log(err);
               } else {
-                console.log(doc);
+                // console.log(doc);
               }
             }
           );
@@ -256,6 +264,13 @@ exports.accept = async (req, res, next) => {
         content: 'เวลาที่ส่งคำร้องขอ' + currentDate,
         read: false,
       };
+
+      let data = {
+        content: doc.name + 'ได้จับคู่แล้ว',
+        userId: [doc.owner],
+      };
+      notificationController.sendNotificationToDevice(data);
+
       console.log(doc.owner);
       await User.findById(doc.owner).then(async (user) => {
         let tempnNotification = user.notification;
@@ -285,7 +300,14 @@ exports.accept = async (req, res, next) => {
                     content: 'เวลาที่ส่งคำร้องขอ' + currentDate,
                     read: false,
                   };
+
+                  let data = {
+                    content: doc.name + 'ได้จับคู่แล้ว',
+                    userId: [doc.owner],
+                  };
+                  notificationController.sendNotificationToDevice(data);
                   console.log(doc.owner);
+
                   await User.findById(doc.owner).then(async (user) => {
                     let tempnNotification = user.notification;
                     await User.findByIdAndUpdate(doc.owner, {
@@ -563,7 +585,12 @@ exports.cancelAccept = async (req, res, next) => {
         //update new match
         Cat.findByIdAndUpdate(
           catOwnerId,
-          { pending: doc.pending, historyCancel: historyCancel, accept: '' },
+          {
+            pending: doc.pending,
+            historyCancel: historyCancel,
+            accept: '',
+            request: '',
+          },
           (err, docs) => {
             if (err) {
               console.log(err);
@@ -605,6 +632,12 @@ exports.cancelAccept = async (req, res, next) => {
                         ' น.',
                       read: false,
                     };
+
+                    let data = {
+                      content: doc.name + 'ได้ถูกยกเลิกจับคู่',
+                      userId: [doc.owner],
+                    };
+                    notificationController.sendNotificationToDevice(data);
                     console.log(doc.owner);
                     await User.findById(doc.owner).then(async (user) => {
                       let tempnNotification = user.notification;

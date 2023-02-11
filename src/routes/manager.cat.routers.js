@@ -1,5 +1,6 @@
 const express = require('express');
 const managerCatController = require('../controllers/manager.cat.controller.js');
+const notificationController = require('../services/notification.services.js');
 const router = express.Router();
 /*
 router.get('/getbreeds', managerCatController.getBreeds);
@@ -13,4 +14,6 @@ router.post('/notify', managerCatController.getNotifications);
 router.post('/sendSurvey', managerCatController.sendSurvey);
 router.delete('/deletenotify', managerCatController.deleteNotifications);
 router.get('/survey', managerCatController.getSurvey);
+
+router.post('/sendNotification', managerCatController.getSurvey);
 module.exports = router;
