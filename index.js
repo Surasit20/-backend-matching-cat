@@ -5,7 +5,7 @@ const dbConfig = require('./src/config/db.config.js');
 const auth = require('./src/middlewares/auth.js');
 const errors = require('./src/middlewares/error.js');
 const app = express();
-const PORT = 3030;
+const PORT = process.env.PORT || 3030;
 const cors = require('cors');
 mongoose.Promise = global.Promise;
 mongoose

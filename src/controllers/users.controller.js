@@ -1,8 +1,7 @@
 const User = require('../models/user.model.js');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const config = process.env;
+//const jwt = require('jsonwebtoken');
+
 exports.register = async (req, res, next) => {
   if (
     req.body.userName == '' ||
