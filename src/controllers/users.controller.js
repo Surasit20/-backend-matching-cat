@@ -137,6 +137,8 @@ exports.changePasswordUser = async (req, res, next) => {
     res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
   }
 };
+
+/*
 exports.createTokenResetPassword = async (req, res) => {
   // Our login logic starts here
   try {
@@ -196,3 +198,4 @@ exports.createTokenResetPassword = async (req, res) => {
   }
   // Our register logic ends here
 };
+*/
