@@ -42,6 +42,7 @@ exports.addCat = async (req, res, next) => {
       natureOfParenting: cat.natureOfParenting,
       photo: cat.photo,
       feedSystem: cat.feedSystem,
+      address: req.body.address,
     });
   } catch (err) {
     //console.log(err);
