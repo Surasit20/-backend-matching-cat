@@ -68,6 +68,7 @@ exports.editCat = async (req, res, next) => {
       location: { lat: location['lat'], lng: location['lng'] },
       birthday: new Date(req.body.birthday),
       feedSystem: req.body.feedSystem,
+      address: req.body.address,
     });
 
     res.send({
