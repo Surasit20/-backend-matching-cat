@@ -1,7 +1,8 @@
 const User = require('../models/user.model.js');
 const bcrypt = require('bcryptjs');
-//const jwt = require('jsonwebtoken');
-
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const config = process.env;
 exports.register = async (req, res, next) => {
   if (
     req.body.userName == '' ||
@@ -136,8 +137,6 @@ exports.changePasswordUser = async (req, res, next) => {
     res.send({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
   }
 };
-
-/*
 exports.createTokenResetPassword = async (req, res) => {
   // Our login logic starts here
   try {
@@ -197,4 +196,3 @@ exports.createTokenResetPassword = async (req, res) => {
   }
   // Our register logic ends here
 };
-*/

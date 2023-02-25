@@ -4,16 +4,12 @@
 
 
 
-*/
-
-/*
-};
-
 module.exports = {
   db: 'mongodb://localhost:27017/matching-cats',
 };
 
 */
+
 module.exports = {
   db: 'mongodb+srv://cat:1234@cluster0.yr99reb.mongodb.net/matching-cats?retryWrites=true&w=majority',
 };

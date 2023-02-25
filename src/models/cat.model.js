@@ -19,6 +19,7 @@ const catSchema = new mongoose.Schema(
     birthday: { type: Date, required: false },
     photo: { type: Array, required: false },
     historyCancel: { type: Array, required: false },
+    report: { type: Array, required: false },
     interested: {
       breed: String,
       color: String,
@@ -27,6 +28,7 @@ const catSchema = new mongoose.Schema(
     },
     required: false,
   },
+
   {
     timestamps: true,
   }

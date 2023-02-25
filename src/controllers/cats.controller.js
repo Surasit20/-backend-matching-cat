@@ -42,7 +42,6 @@ exports.addCat = async (req, res, next) => {
       natureOfParenting: cat.natureOfParenting,
       photo: cat.photo,
       feedSystem: cat.feedSystem,
-      address: req.body.address,
     });
   } catch (err) {
     //console.log(err);
@@ -52,6 +51,7 @@ exports.addCat = async (req, res, next) => {
 
 //แก้ไขแมว
 exports.editCat = async (req, res, next) => {
+  console.log(req.body);
   try {
     const location = JSON.parse(req.body.location);
     const cat = await Cat.findByIdAndUpdate(req.body._id, {

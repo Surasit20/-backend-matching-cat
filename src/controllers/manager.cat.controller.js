@@ -203,3 +203,58 @@ exports.getSurvey = async (req, res, next) => {
     res.send({ message: err.message });
   }
 };
+
+//repost cat
+exports.reportCat = async (req, res, next) => {
+  console.log(req.body.idCat);
+  const report = req.body.report;
+  const idCat = req.body.idCat;
+  try {
+    let cat = await Cat.find({ _id: idCat });
+
+    let tempReport = cat[0].report;
+
+    let updateReport = [...tempReport, report];
+
+    await Cat.findByIdAndUpdate(idCat, {
+      report: updateReport,
+    });
+    //console.log(deleteCat);
+    res.status(200).json();
+  } catch (error) {
+    // console.log(error);
+    res.status(404).json(error);
+  }
+};
+
+exports.getReportCat = async (req, res, next) => {
+  try {
+    let cat = await Cat.find();
+
+    let reportCat = [];
+
+    for (let i = 0; i < cat.length; i++) {
+      if (
+        cat[i].report != null &&
+        cat[i].report != undefined &&
+        cat[i].report.length != 0
+      ) {
+        for (let j = 0; j < cat[i].report.length; j++) {
+          //console.log(j);
+
+          let user = await User.find({ _id: cat[i].report[j].idOwner });
+          console.log(user[0].name);
+          cat[i].report[j].nameUserReport = user[0].name;
+          // console.log(cat[i]);
+        }
+        reportCat.push(cat[i]);
+      }
+    }
+    console.log('ๅๅ');
+    console.log(reportCat);
+    res.send(reportCat);
+  } catch (error) {
+    console.log(error);
+    res.status(404).json(error);
+  }
+};

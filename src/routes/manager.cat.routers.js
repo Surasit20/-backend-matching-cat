@@ -16,4 +16,6 @@ router.delete('/deletenotify', managerCatController.deleteNotifications);
 router.get('/survey', managerCatController.getSurvey);
 
 router.post('/sendNotification', managerCatController.getSurvey);
+router.post('/reportCat', managerCatController.reportCat);
+router.get('/getReportCat', managerCatController.getReportCat);
 module.exports = router;
