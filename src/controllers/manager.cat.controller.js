@@ -243,8 +243,13 @@ exports.getReportCat = async (req, res, next) => {
           //console.log(j);
 
           let user = await User.find({ _id: cat[i].report[j].idOwner });
-          console.log(user[0].name);
-          cat[i].report[j].nameUserReport = user[0].name;
+
+          try {
+            cat[i].report[j].nameUserReport = user[0].name;
+          } catch (err) {
+            cat[i].report[j].nameUserReport = '???';
+          }
+
           // console.log(cat[i]);
         }
         reportCat.push(cat[i]);
